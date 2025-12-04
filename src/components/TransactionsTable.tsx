@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { FeedItem } from '../api/starling';
 import { formatMinorUnits } from '../utils/roundup';
 
@@ -13,6 +13,26 @@ export default function TransactionsTable({
 }: TransactionsTableProps) {
   const [filter, setFilter] = useState<FilterType>('ALL');
 
+  // Filter transactions based on selected filter
+  const filteredTransactions = useMemo(
+    () =>
+      feedItems.filter((item) => {
+        if (filter === 'ALL') return true;
+        return item.direction === filter;
+      }),
+    [feedItems, filter],
+  );
+
+  const inCount = useMemo(
+    () => feedItems.filter((item) => item.direction === 'IN').length,
+    [feedItems],
+  );
+
+  const outCount = useMemo(
+    () => feedItems.filter((item) => item.direction === 'OUT').length,
+    [feedItems],
+  );
+
   if (feedItems.length === 0) {
     return (
       <div
@@ -24,15 +44,6 @@ export default function TransactionsTable({
       </div>
     );
   }
-
-  // Filter transactions based on selected filter
-  const filteredTransactions = feedItems.filter((item) => {
-    if (filter === 'ALL') return true;
-    return item.direction === filter;
-  });
-
-  const inCount = feedItems.filter((item) => item.direction === 'IN').length;
-  const outCount = feedItems.filter((item) => item.direction === 'OUT').length;
 
   return (
     <section style={{ marginTop: 24 }} aria-labelledby="transactions-heading">
@@ -222,12 +233,12 @@ export default function TransactionsTable({
               const dateTime = item.transactionTime || item.timestamp;
               const formattedDate = dateTime
                 ? new Date(dateTime).toLocaleDateString('en-GB', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
                 : 'N/A';
 
               return (
@@ -293,9 +304,8 @@ export default function TransactionsTable({
                         color: item.direction === 'OUT' ? '#c00' : '#0a0',
                       }}
                       role="status"
-                      aria-label={`Direction: ${
-                        item.direction === 'OUT' ? 'Outgoing' : 'Incoming'
-                      }`}
+                      aria-label={`Direction: ${item.direction === 'OUT' ? 'Outgoing' : 'Incoming'
+                        }`}
                     >
                       {item.direction}
                     </span>
@@ -303,9 +313,8 @@ export default function TransactionsTable({
                   <td
                     style={{ padding: '12px 16px', fontSize: 14, opacity: 0.7 }}
                     role="cell"
-                    aria-label={`Category: ${
-                      item.spendingCategory || 'Not available'
-                    }`}
+                    aria-label={`Category: ${item.spendingCategory || 'Not available'
+                      }`}
                   >
                     {item.spendingCategory || 'N/A'}
                   </td>
